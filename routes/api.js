@@ -16,7 +16,13 @@ router.get('/get_comments', (req, res)=>{
     })
     .end()
     .then( (comments) =>{
-        res.send(comments)
+        var data = JSON.parse(comments)
+        var accounts = []
+        data.forEach( (elem)=>{
+            accounts.push(elem.node.owner.username)
+        })
+        var randomAccount = Math.floor(Math.random() * accounts.length )
+        res.send(accounts[randomAccount])
     })
     .catch( (error) =>{
         console.error('Failed to get link: ', error)
