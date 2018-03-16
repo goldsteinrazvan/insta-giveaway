@@ -3,11 +3,13 @@ var router = express.Router();
 
 var Nightmare = require('nightmare');
 
+var LoadComments = require('../utils/LoadComments')
+
 router.get( '/', (req, res)=>{
     res.send('API v1 endpoint')
 })
 
-router.get('/get_comments', (req, res)=>{
+router.get('/comments', (req, res)=>{
     var nightmare = Nightmare({show: false})
     nightmare
     .goto(req.query.instagram_link)
@@ -27,6 +29,35 @@ router.get('/get_comments', (req, res)=>{
     .catch( (error) =>{
         console.error('Failed to get link: ', error)
     })
+
+})
+
+router.get('/participants', (req, res) =>{
+    var nightmare = Nightmare({show: true})
+    nightmare
+        .goto(req.query.instagram_link)
+        .exists('._m3m1c, ._1s3cd')
+        .then( (result) =>{
+            if(result){
+                console.log('Load more comments exists')
+                return LoadComments.load(nightmare)
+            } else {
+                return
+            }
+        })
+        .then( ()=>{
+            nightmare
+                .evaluate( ()=>{
+                    return JSON.stringify(window._sharedData.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_comment.edges)
+                })
+        })
+        .then( (result)=>{
+            res.send(result)
+            return nightmare.end()
+        })
+        .catch( (error) =>{
+            console.error('Failed to get link: ', error)
+        })
 
 })
 
