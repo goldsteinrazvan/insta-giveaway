@@ -33,7 +33,8 @@ router.get('/comments', (req, res)=>{
 })
 
 router.get('/participants', (req, res) =>{
-    var nightmare = Nightmare({show: true})
+    var username
+    var nightmare = Nightmare({show: true, executionTimeout: 180000})
     nightmare
         .goto(req.query.instagram_link)
         .exists('._m3m1c, ._1s3cd')
@@ -46,13 +47,29 @@ router.get('/participants', (req, res) =>{
             }
         })
         .then( ()=>{
-            nightmare
+           return nightmare
                 .evaluate( ()=>{
-                    return JSON.stringify(window._sharedData.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_comment.edges)
+                   return document.querySelector('._iadoq').innerText
                 })
         })
         .then( (result)=>{
-            res.send(result)
+            //get owner account of post
+            username = result
+            return nightmare
+                    .evaluate( () =>{
+                        return Array.from(document.querySelectorAll('._ezgzd ._2g7d5')).map(element => element.innerText)
+                    })
+        })
+        .then( (accounts) =>{
+            //filter out account that is the owner of the post
+            var participants = accounts.filter(account => account != username)
+
+            //remove duplicate accounts
+            var response = participants.filter((participant, next, self)=>{
+                return self.indexOf(participant) == next
+            })
+
+            res.send(response)
             return nightmare.end()
         })
         .catch( (error) =>{
