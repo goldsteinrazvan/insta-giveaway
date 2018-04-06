@@ -5,6 +5,9 @@ var Nightmare = require('nightmare');
 
 var LoadComments = require('../utils/LoadComments')
 
+var front = require('./front')
+router.use(front)
+
 router.get( '/', (req, res)=>{
     res.send('API v1 endpoint')
 })
@@ -48,7 +51,7 @@ router.get('/participants', (req, res) =>{
 
             var randomAccount = Math.floor(Math.random() * accounts.length )
             res.send(response[randomAccount])
-            
+
             return nightmare.end()
         })
         .catch( (error) =>{
