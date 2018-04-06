@@ -9,29 +9,6 @@ router.get( '/', (req, res)=>{
     res.send('API v1 endpoint')
 })
 
-router.get('/comments', (req, res)=>{
-    var nightmare = Nightmare({show: false})
-    nightmare
-    .goto(req.query.instagram_link)
-    .evaluate( ()=>{
-        return JSON.stringify(window._sharedData.entry_data.PostPage[0].graphql.shortcode_media.edge_media_to_comment.edges)
-    })
-    .end()
-    .then( (comments) =>{
-        var data = JSON.parse(comments)
-        var accounts = []
-        data.forEach( (elem)=>{
-            accounts.push(elem.node.owner.username)
-        })
-        var randomAccount = Math.floor(Math.random() * accounts.length )
-        res.send(accounts[randomAccount])
-    })
-    .catch( (error) =>{
-        console.error('Failed to get link: ', error)
-    })
-
-})
-
 router.get('/participants', (req, res) =>{
     var username
     var nightmare = Nightmare({show: true, executionTimeout: 180000})
@@ -69,7 +46,9 @@ router.get('/participants', (req, res) =>{
                 return self.indexOf(participant) == next
             })
 
-            res.send(response)
+            var randomAccount = Math.floor(Math.random() * accounts.length )
+            res.send(response[randomAccount])
+            
             return nightmare.end()
         })
         .catch( (error) =>{
